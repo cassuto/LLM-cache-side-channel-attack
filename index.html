@@ -38,9 +38,53 @@
   href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="static/css/index.css">
 
-  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
-  <script src="static/js/jquery.min.js"></script>
-  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script>
+    function cocurr_load_js(urls){
+      var controllers = urls.map(function(){
+        return new AbortController();
+      });
+
+      // construct a promise
+      var tasks = urls.map(function(url, i){
+        return fetch(url, { signal: controllers[i].signal })
+                .then(function(res){
+                  if (!res.ok) throw new Error('Net' + res.status);
+                  var ct = res.headers.get('Content-Type') || '';
+                  if (
+                    !ct.toLowerCase().includes('application/javascript') &&
+                    !ct.toLowerCase().includes('text/javascript')
+                  ) {
+                    throw new Error('Invalid Content-Type: ' + ct);
+                  }
+                  return res.text();
+                });
+      });
+
+      Promise.any(tasks)
+        .then(function(jsCode){
+          // cancel other pending fetches
+          controllers.forEach(function(ctrl){
+            ctrl.abort();
+          });
+          var s = document.createElement('script');
+          s.text = jsCode;
+          document.head.appendChild(s);
+        })
+        .catch(function(err){
+          console.error(err);
+        });
+    }
+
+    cocurr_load_js([
+        'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js',
+        'static/js/jquery.min.js',
+    ]);
+    cocurr_load_js([
+        "https://documentcloud.adobe.com/view-sdk/main.js",
+        "static/js/view-sdk-main.js",
+    ]);
+  </script>
+
   <script defer src="static/js/fontawesome.all.min.js"></script>
   <script src="static/js/bulma-carousel.min.js"></script>
   <script src="static/js/bulma-slider.min.js"></script>

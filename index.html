@@ -89,6 +89,12 @@
   <script src="static/js/bulma-carousel.min.js"></script>
   <script src="static/js/bulma-slider.min.js"></script>
   <script src="static/js/index.js"></script>
+
+  <style>
+    .indent {
+        text-indent: 1em;
+    }
+</style>
 </head>
 <body>
 
@@ -171,22 +177,24 @@
 
 
 <!-- Teaser video-->
-<template id="eat">
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
+      <h2 class="title is-3 has-text-centered">
+      Demo Video
+        </h2>
       <video poster="" id="tree" autoplay controls muted loop height="100%">
         <!-- Your video here -->
-        <source src="static/videos/banner_video.mp4"
+        <source src="static/videos/demo.mp4"
         type="video/mp4">
       </video>
       <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
+        Left&mdash;victim (LM Studio with RTX 3060);
+        Right&mdash;attacker (Server with H20 GPU) reconstructing the LLM’s prompt and response from cache traces.
       </h2>
     </div>
   </div>
 </section>
-</template>
 <!-- End teaser video -->
 
 <!-- Paper abstract -->
@@ -194,31 +202,143 @@
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
-        <img src="static/images/threat_model.svg" style="width: 400px; height: auto; margin-top: -80px; margin-left: 50px; margin-bottom:20px;"><br>
         <!--<br>
         Figure 1: Threat Model-->
         <h2 class="title is-3">Overview</h2>
-        <div class="content has-text-justified">
-          <p>
-Large Language Models (LLMs) that can be deployed locally have recently gained popularity for privacy-sensitive tasks, with companies such as Meta, Google, and Intel playing significant roles in their development.
-However, the security of local LLMs through the lens of hardware cache side-channels remains unexplored.
-<br>
-In this paper, we unveil novel side-channel vulnerabilities in local LLM inference: token value and token position leakage, which can expose both the victim's input and output text, thereby compromising user privacy.
+        <div class="content indent has-text-justified">
+<p>In this paper, we find novel side-channel vulnerabilities in locally-deployed LLM inference: <b>token value</b> and <b>token position</b> leakage, which can expose both the victim's input and output text.
 Specifically, we found that adversaries can infer the token values from the cache access patterns of the token embedding operation, and deduce the token positions from the timing of autoregressive decoding phases.
-To demonstrate the potential of these leaks, we design a novel eavesdropping attack framework targeting both open-source and proprietary LLM inference systems.
-The attack framework does not directly interact with the victim's LLM and can be executed without privilege.
-<br>
-We evaluate the attack on a range of practical local LLM deployments (e.g., Llama, Falcon, and Gemma), and the results show that our attack achieves promising accuracy.
-The restored output and input text have an average edit distance of 5.2% and 17.3% to the ground truth, respectively.
-Furthermore, the reconstructed texts achieve average cosine similarity scores of 98.7% (input) and 98.0% (output).
-
-          </p>
+To demonstrate the potential of these leaks, we design a novel prompt and response reconstruction attack targeting both open-source and proprietary LLM inference systems.
+The attack does not directly interact with the victim's LLM and can be executed without privilege.</p>
+<p>We show that the proof-of-concept attack is feasiable across 10 LLM inference frameworks, 5 distinct LLM architectures, and 3 different hardware configurations (including GPU-accelerated systems). We have disclosed our findings to CNVD.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 <!-- End paper abstract -->
+
+<!-- Threat Model -->
+<section class="section"> <!-- hero is-light -->
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!--<br>
+        Figure 1: Threat Model-->
+        <h2 class="title is-3">Threat Model</h2>
+        <div class="content has-text-justified">
+          <h3 class="title is-4">Adversary’s Capability</h3>
+          <div class="indent">
+            <p>&#9654; Execute non-privileged code on the victim machine</p>
+            <p>&#9654; Obtain model file shared memory by either mmap() or page deduplication</p>
+            <p>&#9654; Flush cache line with clflush instruction</p>
+          </div>
+
+          <div style="text-align: center;">
+            <img src="static/images/threat_model.svg" style="width: 60%; height: auto; margin-left: 50px; margin-top:1em;">
+          </div>
+
+          <h3 class="title is-4">Assumption on the Victim</h3>
+          <div class="indent">
+            <p>&#9654; The token embedding layer in LLM is offloaded to CPU due to restricted memory of consumer-grade GPU.</p>
+          </div>
+
+          <h3 class="title is-4">Example Attack Scenarios</h3>
+          
+          <div class="indent">
+            <p>To further clarify the threat model, we describe two concrete attack scenarios here that adhere to its assumptions.</p>
+            <p><b>Attack Scenario 1</b>: The attacker is another legitimate, non privileged user (remotely or locally) operating on the same workstation machine. The two users share the same model file within the same operation system, allowing the attacker to execute mmap() on the file.</p>
+          </div>
+
+          <div style="text-align: center;">
+            <img src="static/images/attack_scene1.svg" style="width: 60%; height: auto; margin-top: 1em">
+          </div>
+
+          <br>
+          
+          <div class="indent">
+            <p><b>Attack Scenario 2</b>: The attacker has access to a legitimate cloud container co-located on the same physical server as the victim, and launched a non-privileged cache prober within its container.</p>
+            <p>Consistent with the attack scenario 1, both containers operate within the same system, capable of accessing the identical model file, thereby permitting the attacker to execute mmap() system calls on the shared file.</p>
+          </div>
+
+          <div style="text-align: center;">
+            <p> <img src="static/images/attack_scene2.svg" style="width: 60%; height: auto; margin-top: 1em"></p>
+          </div>
+
+          <p>The assumption on shared model file may hold true, as LLM model files typically occupy substantial storage space, and model file sharing could potentially conserve storage resources.</p>
+           
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<template class="eat">
+<!-- what's new -->
+<section class="section"> <!-- hero is-light -->
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!--<br>
+        Figure 1: Threat Model-->
+        <h2 class="title is-3">What's New in Our Method?</h2>
+        <div class="content has-text-justified">
+          <h3 class="title is-4"></h3>
+          <div class="indent">
+            <p>&#9654;To the best of our knowledge, this work presents the first micro-architecture-level cache side-channel attack framework capable of approximately reconstructing both LLM prompts and response text.</p>
+            <p>&#9654;We found unique cache side-channel patterns in LLM, including <b>token value</b> and <b> positional</b> leakage.
+            <p>&#9654;We fine-tune LLMs on synthetic data to mitigate noise in cache traces, utilizing both token text and timing signal features.</p>
+            <p>&#9654;We introduce a new prompt reconstruction strategy that combines cache traces with the reconstructed response as contextual information.</p>
+          </div>
+          <br>
+
+          <!-- <p></p> -->
+
+           
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<!-- Updates -->
+<section class="section"> <!-- hero is-light -->
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!--<br>
+        Figure 1: Threat Model-->
+        <h2 class="title is-3">Updates</h2>
+        <div class="content has-text-justified">
+          <h3><img src="static/images/update.svg" style="height: 1em;"> Update (August 12, 2025)</h3>
+          <p>Add a demo video and expand on the threat model with a detailed explanation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template> 
+
+<!-- Further Information -->
+<section class="section"> <!-- hero is-light -->
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <!--<br>
+        Figure 1: Threat Model-->
+        <h2 class="title is-3">Further Information</h2>
+        <div class="content has-text-justified">
+          For further details, please refer to our paper, published at USENIX Security 2025.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template> 
 
 
 <!-- Image carousel -->
@@ -322,22 +442,6 @@ Furthermore, the reconstructed texts achieve average cosine similarity scores of
 </section>
 </template>
 <!-- End video carousel -->
-
-
-<!-- TODO -->
-<section class="section"> <!-- hero is-light -->
-  <div class="container is-max-desktop">
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">TODO</h2>
-          <p>This site is under construction, and we are still working on the content.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- TODO -->
 
 
 <!-- Paper poster -->

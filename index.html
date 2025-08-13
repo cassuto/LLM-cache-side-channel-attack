@@ -206,11 +206,11 @@
         Figure 1: Threat Model-->
         <h2 class="title is-3">Overview</h2>
         <div class="content indent has-text-justified">
-<p>In this paper, we find novel side-channel vulnerabilities in locally-deployed LLM inference: <b>token value</b> and <b>token position</b> leakage, which can expose both the victim's input and output text.
+<p>In this paper, we find novel side-channel vulnerabilities in locally deployed LLM inference: <b>token value</b> and <b>token position</b> leakage, which can expose both the victim's input and output text.
 Specifically, we found that adversaries can infer the token values from the cache access patterns of the token embedding operation, and deduce the token positions from the timing of autoregressive decoding phases.
 To demonstrate the potential of these leaks, we design a novel prompt and response reconstruction attack targeting both open-source and proprietary LLM inference systems.
 The attack does not directly interact with the victim's LLM and can be executed without privilege.</p>
-<p>We show that the proof-of-concept attack is feasiable across 10 LLM inference frameworks, 5 distinct LLM architectures, and 3 different hardware configurations (including GPU-accelerated systems). We have disclosed our findings to CNVD.</p>
+<p>We show that the proof-of-concept attack is feasible across 10 LLM inference frameworks, 5 distinct LLM architectures, and 3 different hardware configurations (including GPU-accelerated systems). We have disclosed our findings to CNVD.</p>
         </div>
       </div>
     </div>
@@ -229,7 +229,7 @@ The attack does not directly interact with the victim's LLM and can be executed 
         <div class="content has-text-justified">
           <h3 class="title is-4">Adversary’s Capability</h3>
           <div class="indent">
-            <p>&#9654; Execute non-privileged code on the victim machine</p>
+            <p>&#9654; Execute a non-privileged code on the victim machine</p>
             <p>&#9654; Obtain model file shared memory by either mmap() or page deduplication</p>
             <p>&#9654; Flush cache line with clflush instruction</p>
           </div>
@@ -247,7 +247,7 @@ The attack does not directly interact with the victim's LLM and can be executed 
           
           <div class="indent">
             <p>To further clarify the threat model, we describe two concrete attack scenarios here that adhere to its assumptions.</p>
-            <p><b>Attack Scenario 1</b>: The attacker is another legitimate, non privileged user (remotely or locally) operating on the same workstation machine. The two users share the same model file within the same operation system, allowing the attacker to execute mmap() on the file.</p>
+            <p><b>Attack Scenario 1</b>: The attacker is another legitimate, non-privileged user (remotely or locally) operating on the same workstation machine. The two users share the same model file within the same operating system, allowing the attacker to execute mmap() on the file.</p>
           </div>
 
           <div style="text-align: center;">
@@ -257,8 +257,8 @@ The attack does not directly interact with the victim's LLM and can be executed 
           <br>
           
           <div class="indent">
-            <p><b>Attack Scenario 2</b>: The attacker has access to a legitimate cloud container co-located on the same physical server as the victim, and launched a non-privileged cache prober within its container.</p>
-            <p>Consistent with the attack scenario 1, both containers operate within the same system, capable of accessing the identical model file, thereby permitting the attacker to execute mmap() system calls on the shared file.</p>
+            <p><b>Attack Scenario 2</b>: The attacker has access to a legitimate cloud container co-located on the same physical server as the victim. From within the container, the attacker launched a non-privileged cache prober.</p>
+            <p>Consistent with attack scenario 1, both containers operate within the same system, capable of accessing the identical model file, thereby permitting the attacker to execute mmap() system calls on the shared file.</p>
           </div>
 
           <div style="text-align: center;">
@@ -312,10 +312,10 @@ The attack does not directly interact with the victim's LLM and can be executed 
       <div class="column is-four-fifths">
         <!--<br>
         Figure 1: Threat Model-->
-        <h2 class="title is-3">Updates</h2>
+        <h2 class="title is-3">Changelog</h2>
         <div class="content has-text-justified">
           <h3><img src="static/images/update.svg" style="height: 1em;"> Update (August 12, 2025)</h3>
-          <p>Add a demo video and expand on the threat model with a detailed explanation.</p>
+          <p>We added a demo video and expanded on the threat model with a detailed explanation.</p>
         </div>
       </div>
     </div>
